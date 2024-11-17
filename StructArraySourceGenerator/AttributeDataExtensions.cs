@@ -8,4 +8,4 @@ internal static class AttributeDataExtensions
     {
         return (T)attribute.ConstructorArguments[index].Value!;
     }
-}   
+}

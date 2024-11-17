@@ -2,6 +2,7 @@
 using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
+using StructArrayAttributes;
 
 namespace StructArraySourceGenerator;
 
@@ -9,10 +10,9 @@ namespace StructArraySourceGenerator;
 public class StructArrayGenerator : IIncrementalGenerator
 {
     private record struct StructArrayData(string Name, string Namespace, byte Size);
-    
-    private const string GeneratorNamespace = nameof(StructArrayGenerator);
+
     private const string AttributeName = nameof(StructArrayAttribute);
-    private const string FullAttributeName = $"{GeneratorNamespace}.{AttributeName}";
+    private const string FullAttributeName = nameof(StructArrayAttributes) + "." + AttributeName;
     
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {

@@ -1,4 +1,6 @@
-﻿namespace StructArraySourceGenerator;
+﻿using System;
+
+namespace StructArrayAttributes;
 
 [System.Diagnostics.Conditional("StructArray_Attributes")]
 [AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]

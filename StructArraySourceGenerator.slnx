@@ -1,3 +1,4 @@
 ﻿<Solution>
-  <Project Path="StructArraySourceGenerator.csproj" Type="Classic C#" />
+  <Project Path="StructArrayAttributes\StructArrayAttributes.csproj" Type="Classic C#" />
+  <Project Path="StructArraySourceGenerator\StructArraySourceGenerator.csproj" Type="Classic C#" />
 </Solution>
