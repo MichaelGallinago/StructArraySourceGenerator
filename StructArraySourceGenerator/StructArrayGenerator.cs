@@ -1,6 +1,7 @@
 ﻿using System.Collections.Immutable;
 using System.Text;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 using StructArrayAttributes;
 
@@ -19,26 +20,27 @@ internal class StructArrayGenerator : IIncrementalGenerator
         IncrementalValueProvider<ImmutableArray<StructArrayData?>> provider = 
             context.SyntaxProvider.ForAttributeWithMetadataName(
                     FullAttributeName,
-                    static (_, _) => true,
+                    static (node, _) => node is StructDeclarationSyntax,
                     static (ctx, _) => GetSemanticTargetForGeneration(ctx))
                 .Collect();
-
+        
         context.RegisterSourceOutput(provider, Build);
     }
-    
+
     private static StructArrayData? GetSemanticTargetForGeneration(GeneratorAttributeSyntaxContext context)
     {
         AttributeData? attribute = context.Attributes
             .FirstOrDefault(a => a.AttributeClass?.Name == AttributeName);
-        
+
         if (attribute == null) return null;
         
-        var size = attribute.GetConstructorArgument<byte>(2);
+        var size = attribute.GetConstructorArgument<byte>(0);
         if (size == 0) return null;
         
+        var structSymbol = (INamedTypeSymbol)context.TargetSymbol;
         return new StructArrayData(
-            attribute.GetConstructorArgument<string>(0),
-            attribute.GetConstructorArgument<string>(1),
+            structSymbol.Name,
+            structSymbol.ContainingNamespace.ToDisplayString(),
             size);
     }
     
@@ -61,7 +63,7 @@ using System.Runtime.CompilerServices;
 
 namespace {{structArray.Namespace}}
 {
-    public struct {{structArray.Name}}<T>
+    public partial struct {{structArray.Name}}<T>
     {
         public const byte Length = {{structArray.Size.ToString()}};
         
