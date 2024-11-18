@@ -7,7 +7,7 @@ using StructArrayAttributes;
 namespace StructArraySourceGenerator;
 
 [Generator]
-public class StructArrayGenerator : IIncrementalGenerator
+internal class StructArrayGenerator : IIncrementalGenerator
 {
     private record struct StructArrayData(string Name, string Namespace, byte Size);
 
@@ -42,8 +42,7 @@ public class StructArrayGenerator : IIncrementalGenerator
             size);
     }
     
-    private static void Build(
-        SourceProductionContext context, ImmutableArray<StructArrayData?> structArrays)
+    private static void Build(SourceProductionContext context, ImmutableArray<StructArrayData?> structArrays)
     {
         if (structArrays.IsDefaultOrEmpty) return;
         
@@ -52,18 +51,19 @@ public class StructArrayGenerator : IIncrementalGenerator
             .Select(item => item!.Value);
         
         Parallel.ForEach(filteredStructArrays, structArray => context.AddSource(
-            "StructArray.g.cs", 
-            SourceText.From(CreateFileString(structArray), 
-            Encoding.UTF8)));
+            "StructArray.g.cs",
+            SourceText.From(CreateFileString(structArray), Encoding.UTF8)));
     }
 
     private static string CreateFileString(StructArrayData structArray) => new StringBuilder().AppendLine(
 $$"""
+using System.Runtime.CompilerServices;
+
 namespace {{structArray.Namespace}}
 {
     public struct {{structArray.Name}}<T>
     {
-        public const byte Length => {{structArray.Size}};
+        public const byte Length = {{structArray.Size.ToString()}};
         
 """
         ).AddFields(structArray.Size).AppendLine(
@@ -76,15 +76,15 @@ namespace {{structArray.Namespace}}
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private T GetValue<T>(int index) => index switch
+        private T GetValue(int index) => index switch
         {
 """
         ).AddCasesToGetValue(structArray.Size).AppendLine(
 """
-        }
+        };
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void SetValue(int index, byte value)
+        private void SetValue(int index, T value)
         {
             switch (index)
             {

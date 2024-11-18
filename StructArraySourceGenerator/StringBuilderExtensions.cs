@@ -8,7 +8,7 @@ internal static class StringBuilderExtensions
     {
         for (var i = 0; i < number; i++)
         {
-            builder.Append("       private T _value").Append(i).AppendLine(";");
+            builder.Append("        private T _value").Append(i).AppendLine(";");
         }
         return builder;
     }
@@ -17,17 +17,18 @@ internal static class StringBuilderExtensions
     {
         for (var i = 1; i < number; i++)
         {
-            builder.Append("           ").Append(i).Append(" => _value").Append(i).AppendLine(",");
+            builder.Append("            ").Append(i).Append(" => _value").Append(i).AppendLine(",");
         }
-        return builder.AppendLine("           _ => _value0");
+        return builder.AppendLine("            _ => _value0");
     }
     
     internal static StringBuilder AddCasesToSetValue(this StringBuilder builder, byte number)
     {
         for (var i = 1; i < number; i++)
         {
-            builder.Append("           case ").Append(i).Append(": return _value").Append(i).AppendLine(";");
+            builder.Append("                case ")
+                .Append(i).Append(": _value").Append(i).AppendLine(" = value; break;");
         }
-        return builder.AppendLine("            default: return _value0;");
+        return builder.AppendLine("                default: _value0 = value; break;");
     }
 }
