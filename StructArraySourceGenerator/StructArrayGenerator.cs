@@ -56,6 +56,7 @@ internal class StructArrayGenerator : IIncrementalGenerator
             .Select(item => item!.Value);
         
         FileBuilder.Clear();
+        FileBuilder.AppendLine("using System;");
         FileBuilder.AppendLine("using System.Runtime.CompilerServices;");
         
         Parallel.ForEach(filteredStructArrays, static structArray =>
@@ -71,42 +72,53 @@ internal class StructArrayGenerator : IIncrementalGenerator
     }
 
     private static string CreateStructArrayString(StructArrayData structArray) => new StringBuilder().AppendLine(
-        $$"""
+$$"""
 
-          namespace {{structArray.Namespace}}
-          {
-              public struct {{structArray.Name}}<T>
-              {
-                  public const byte Length = {{structArray.Size.ToString()}};
-                  
-          """
-    ).AddFields(structArray.Size).AppendLine(
-        """
-        
-                public T this[int index]
-                {
-                    [MethodImpl(MethodImplOptions.AggressiveInlining)] get => GetValue(index);
-                    [MethodImpl(MethodImplOptions.AggressiveInlining)] set => SetValue(index, value);
-                }
-                
-                private T GetValue(int index) => index switch
-                {
-        """
-    ).AddCasesToGetValue(structArray.Size).AppendLine(
-        """
-                };
-                
-                private void SetValue(int index, T value)
-                {
-                    switch (index)
-                    {
-        """
-    ).AddCasesToSetValue(structArray.Size).AppendLine(
-        """
-                    }
-                }
+namespace {{structArray.Namespace}}
+{
+    [Serializable]
+    public struct {{structArray.Name}}<T>
+    {
+        public const byte Length = {{structArray.Size.ToString()}};
+      
+"""
+).AddFields(structArray.Size).AppendLine(
+"""
+
+        public T this[int index]
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)] get => GetValue(index);
+            [MethodImpl(MethodImplOptions.AggressiveInlining)] set => SetValue(index, value);
+        }
+
+        public T[] ToArray()
+        {
+            var array = new T[Length];
+            for (int i = 0; i < Length; i++) 
+            { 
+                array[i] = GetValue(i);
+            }
+            return array;
+        }
+
+        private T GetValue(int index) => index switch
+        {
+"""
+).AddCasesToGetValue(structArray.Size).AppendLine(
+"""
+        };
+
+        private void SetValue(int index, T value)
+        {
+            switch (index)
+            {
+"""
+).AddCasesToSetValue(structArray.Size).AppendLine(
+"""
             }
         }
-        """
+    }
+}
+"""
     ).ToString();
 }
